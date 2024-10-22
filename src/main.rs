@@ -1,7 +1,15 @@
 use sdl2::{
     log::{
         log_critical, log_debug, log_info, Category
-    }, pixels::Color, rect::Rect, render::Canvas, video::Window, VideoSubsystem, event::Event, keyboard::Keycode
+    }, 
+    pixels::Color, 
+    rect::Rect, 
+    render::Canvas, 
+    video::Window, 
+    VideoSubsystem, 
+    event::Event, 
+    keyboard::Keycode,
+    hint::{set}
 };
 
 
@@ -25,6 +33,7 @@ fn init_game_state() -> GameState {
     let gc = GlobalConfig{
         width : 800,
         height : 600,
+        linux_window_server: LinuxWindowServer::Wayland
     };
 
     let gs = GameState{
@@ -35,9 +44,17 @@ fn init_game_state() -> GameState {
     return gs;
 }
 
+#[derive(PartialEq)]
+#[allow(dead_code)]
+enum LinuxWindowServer {
+    Xorg = 0,
+    Wayland
+}
+
 struct GlobalConfig {
     width: u32,
     height: u32,
+    linux_window_server: LinuxWindowServer
 }
 
 struct GameState {
@@ -58,6 +75,10 @@ fn game_func() -> Result<(),String> {
 
 fn game_loop(global_state: &mut GameState) -> Result<(),String> {
     log_debug("Starting the Game loop...", Category::Application);
+    
+    if (global_state.global_config.linux_window_server == LinuxWindowServer::Wayland) {
+        set("SDL_VIDEODRIVER", "wayland");
+    }
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
 
@@ -89,12 +110,17 @@ fn game_loop(global_state: &mut GameState) -> Result<(),String> {
 }
 
 fn draw_function(canvas: &mut Canvas<Window>) -> Result<(),String> {
+    // reset the background
     canvas.set_draw_color(Color::RGB(0,255,255));
     canvas.clear();
+
+    // the drawing calls
 
     canvas.set_draw_color(Color::RGB(255,0,0));
     let my_rect: Rect = Rect::new(5,5,200,200);
     canvas.draw_rect(my_rect)?;
+
+    // present the scene
     canvas.present();
     Ok(())
 }

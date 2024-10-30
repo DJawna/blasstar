@@ -1,15 +1,16 @@
-
 #[derive(PartialEq)]
 #[allow(dead_code)]
-pub enum LinuxWindowServer {
+pub enum DisplayServer {
     Xorg = 0,
-    Wayland
+    Wayland,
+    Windows,
+    Unknown
 }
 
 pub struct GlobalConfig {
     pub width: u32,
     pub height: u32,
-    pub linux_window_server: LinuxWindowServer
+    pub linux_window_server: DisplayServer
 }
 
 pub struct GameState {
@@ -20,11 +21,16 @@ pub struct GameState {
 /**
  * initialize the game state
  */
-pub fn init_game_state() -> GameState {
+pub fn init_game_state(platform : &str) -> GameState {
+
     let gc = GlobalConfig{
         width : 800,
         height : 600,
-        linux_window_server: LinuxWindowServer::Wayland
+        linux_window_server: match platform {
+           "Windows" => DisplayServer::Windows,
+           "Linux" => DisplayServer::Wayland,
+           _ => DisplayServer::Unknown
+        }
     };
 
     let gs = GameState{

@@ -1,4 +1,4 @@
-use crate::game_state::{init_game_state, GameState, LinuxWindowServer};
+use crate::game_state::{init_game_state, GameState, DisplayServer};
 use sdl2::{
     log::{Category, log_debug},
     hint::set,
@@ -12,7 +12,8 @@ use sdl2::{
 };
 
 pub fn game_func() -> Result<(),String> {
-    let mut game_state = init_game_state();
+    let platform = sdl2::get_platform();
+    let mut game_state = init_game_state(platform);
 
     while(game_state.should_continue) {
         game_loop(&mut game_state)?;
@@ -25,7 +26,7 @@ pub fn game_func() -> Result<(),String> {
 fn game_loop(global_state: &mut GameState) -> Result<(),String> {
     log_debug("Starting the Game loop...", Category::Application);
     
-    if (global_state.global_config.linux_window_server == LinuxWindowServer::Wayland) {
+    if (global_state.global_config.linux_window_server == DisplayServer::Wayland) {
         set("SDL_VIDEODRIVER", "wayland");
     }
     let sdl_context = sdl2::init()?;

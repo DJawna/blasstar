@@ -3,5 +3,7 @@ name = "blasstar"
 version = "0.1.0"
 edition = "2021"
 
-[dependencies]
-sdl2 = { git = "https://github.com/DJawna/rust-sdl2", branch = "AdditionalLogPrios" }
+[dependencies.sdl2]
+git = "https://github.com/DJawna/rust-sdl2"
+branch = "AdditionalLogPrios"
+features = ["ttf"]

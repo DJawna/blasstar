@@ -1,4 +1,5 @@
 use crate::game_state::{init_game_state, DisplayServer, GameState};
+use crate::graphics_func::{draw_function, Scene};
 use sdl2::{
     event::Event,
     hint::set,
@@ -6,7 +7,6 @@ use sdl2::{
     log::{log_debug, Category},
     pixels::Color,
     rect::Rect,
-    render::Canvas,
     video::Window,
     VideoSubsystem,
 };
@@ -43,8 +43,13 @@ fn game_loop(global_state: &mut GameState) -> Result<(), String> {
         .map_err(|error| format!("could not create canvas: {}", error))?;
 
     let mut event_pump = sdl_context.event_pump()?;
+    let mut scene = Scene::empty_scene(4);
+
+    setup_debug_view(&mut scene, 3)?;
+
     while global_state.should_continue {
-        draw_function(&mut canvas)?;
+
+        draw_function(&mut canvas, &scene)?;
 
         for event in event_pump.poll_iter() {
             match event {
@@ -65,19 +70,15 @@ fn game_loop(global_state: &mut GameState) -> Result<(), String> {
     Ok(())
 }
 
-fn draw_function(canvas: &mut Canvas<Window>) -> Result<(), String> {
-    // reset the background
-    canvas.set_draw_color(Color::RGB(0, 255, 255));
-    canvas.clear();
-
-    // the drawing calls
-
-    canvas.set_draw_color(Color::RGB(255, 0, 0));
-    let my_rect: Rect = Rect::new(5, 5, 200, 200);
-    canvas.draw_rect(my_rect)?;
-
-    // present the scene
-    canvas.present();
+fn setup_debug_view(scene: & mut Scene, debug_layer: usize) -> Result<(), String> {
+    let text_height = 5;
+    let heading_widgth = 200;
+    let font_color = Color::RGBA(0, 255, 0, 255);
+    _ = scene.add_textfield(debug_layer, 
+                        Rect::new(0,0,heading_widgth, text_height), 
+                        "Debug view", 
+                        font_color, 
+                        font_color)?;
     Ok(())
 }
 

@@ -3,6 +3,7 @@ use sdl2::log::{ log_critical, log_info, Category };
 use crate::game_func::game_func;
 mod game_func;
 mod game_state;
+mod draw_system;
 
 fn main() {
     log_info("Start Blastar...", Category::Application);

@@ -1,20 +1,18 @@
-use crate::game_state::{init_game_state, GameState, LinuxWindowServer};
+use crate::{game_state::{init_game_state, GameState, LinuxWindowServer}, draw_system::draw_function};
+
 use sdl2::{
     log::{Category, log_debug},
     hint::set,
     event::Event,
     keyboard::Keycode,
-    render::Canvas,
     video::Window,
-    pixels::Color,
-    rect::Rect,
     VideoSubsystem
 };
 
 pub fn game_func() -> Result<(),String> {
     let mut game_state = init_game_state();
 
-    while(game_state.should_continue) {
+    while game_state.should_continue {
         game_loop(&mut game_state)?;
     }
     
@@ -25,7 +23,7 @@ pub fn game_func() -> Result<(),String> {
 fn game_loop(global_state: &mut GameState) -> Result<(),String> {
     log_debug("Starting the Game loop...", Category::Application);
     
-    if (global_state.global_config.linux_window_server == LinuxWindowServer::Wayland) {
+    if global_state.global_config.linux_window_server == LinuxWindowServer::Wayland {
         set("SDL_VIDEODRIVER", "wayland");
     }
     let sdl_context = sdl2::init()?;
@@ -39,7 +37,7 @@ fn game_loop(global_state: &mut GameState) -> Result<(),String> {
                         .map_err(|error| format!("could not create canvas: {}", error))?;
     
     let mut event_pump = sdl_context.event_pump()?;
-    while(global_state.should_continue) {
+    while global_state.should_continue {
         draw_function(&mut canvas)?;
 
         for event in event_pump.poll_iter() {
@@ -58,21 +56,6 @@ fn game_loop(global_state: &mut GameState) -> Result<(),String> {
     Ok(())
 }
 
-fn draw_function(canvas: &mut Canvas<Window>) -> Result<(),String> {
-    // reset the background
-    canvas.set_draw_color(Color::RGB(0,255,255));
-    canvas.clear();
-
-    // the drawing calls
-
-    canvas.set_draw_color(Color::RGB(255,0,0));
-    let my_rect: Rect = Rect::new(5,5,200,200);
-    canvas.draw_rect(my_rect)?;
-
-    // present the scene
-    canvas.present();
-    Ok(())
-}
 
 fn start_window(video_system: VideoSubsystem,width: u32, height: u32) -> Result<Window,String> {
     return video_system.window("blastar", width, height)

@@ -53,7 +53,8 @@ fn game_loop(global_state: &mut GameState) -> Result<(),Box<dyn Error>> {
                     h: 20f32,
                     w: 20f32,
                 }},
-            ]
+            ],
+            texture_units: vec![]
         }]
     };
     while global_state.should_continue {

@@ -1,17 +1,30 @@
 use std::error::Error;
 
-use sdl3::{pixels::Color, render::FRect, render::Canvas, video::Window};
+use sdl3::{pixels::Color, render::{FRect, FPoint}, render::{Canvas, Texture}, video::Window};
 pub struct SolidRect {
     pub rect: FRect,
     pub fill_color: Color
 }
-pub struct Layer {
+
+pub struct TexturedRect {
+    pub render_rect: FRect,
+    pub texture_source_rect: FRect
+}
+
+
+pub struct TextureRectRenderingUnit<'texture> {
+    pub texture_rects: Vec<TexturedRect>,
+    pub texture: Texture<'texture>
+}
+
+pub struct Layer<'texture> {
     pub solid_rects: Vec<SolidRect>,
+    pub texture_units: Vec<TextureRectRenderingUnit<'texture>>
 
 }
-pub struct Scene {
+pub struct Scene<'texture> {
     // the layers of the scene starting with the lowest layer
-    pub layers: Vec<Layer>
+    pub layers: Vec<Layer<'texture>>
 }
 
 
@@ -27,7 +40,23 @@ pub fn draw_function(canvas: &mut Canvas<Window>, scene: &Scene) -> Result<(),Bo
             canvas.fill_rect(solid_rect.rect)?;
         }
 
+        for textur_unit in &layer.texture_units {
+            for texture_rect in &textur_unit.texture_rects {
+                canvas.copy_ex(&textur_unit.texture, 
+                    texture_rect.texture_source_rect, 
+                    texture_rect.render_rect, 
+                    0f64, 
+                    FPoint{
+                        x: 0f32,
+                        y: 0f32
+                    }, 
+                    false, 
+                    false)?;
+            }
+        }
+
     }
+
 
     // present the scene
     canvas.present();

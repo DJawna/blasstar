@@ -21,14 +21,10 @@ pub fn draw_function(canvas: &mut Canvas<Window>, scene: &Scene) -> Result<(),Bo
     canvas.clear();
 
     // the drawing calls
-
-    canvas.set_draw_color(Color::RGB(255,0,0));
-    let my_rect: FRect = FRect::new(5.,5.,200.,200.);
     for layer  in  &scene.layers {
         for solid_rect in &layer.solid_rects {
             canvas.set_draw_color(solid_rect.fill_color);
             canvas.fill_rect(solid_rect.rect)?;
-            canvas.draw_rect(my_rect)?;
         }
 
     }

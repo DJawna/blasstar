@@ -1,3 +1,4 @@
+use std::{error::Error, fmt::Display};
 
 #[derive(PartialEq)]
 #[allow(dead_code)]
@@ -15,6 +16,31 @@ pub struct GlobalConfig {
 pub struct GameState {
     pub global_config: GlobalConfig,
     pub should_continue: bool
+}
+
+#[derive(Debug)]
+pub struct BlastarError {
+    pub message: String
+}
+
+impl Display for BlastarError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Blastar error occured! Message: {}", self.message)
+    }
+}
+
+impl Error for BlastarError {
+    fn cause(&self) -> Option<&dyn Error> {
+        None
+    }
+
+    fn description(&self) -> &str {
+        &self.message
+    }
+
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        None
+    }
 }
 
 /**

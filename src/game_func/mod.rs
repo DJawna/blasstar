@@ -34,6 +34,9 @@ fn game_loop(global_state: &mut GameState) -> Result<(),Box<dyn Error>> {
                         .into_canvas();
     
     let mut event_pump = sdl_context.event_pump()?;
+
+    
+
     let scene = Scene{
         layers : vec![Layer{
             solid_rects : vec![

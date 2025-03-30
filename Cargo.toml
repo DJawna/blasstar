@@ -2,6 +2,8 @@
 name = "blasstar"
 version = "0.1.0"
 edition = "2024"
+readme = "Readme.md"
+description = "a 2d schmup game"
 
 [dependencies]
 sdl3 = "0.14.16"

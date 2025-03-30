@@ -13,6 +13,7 @@ pub struct GlobalConfig {
     pub linux_window_server: LinuxWindowServer
 }
 
+
 pub struct GameState {
     pub global_config: GlobalConfig,
     pub should_continue: bool

@@ -14,7 +14,14 @@ pub struct GlobalConfig {
 pub struct GameState {
     pub global_config: GlobalConfig,
     pub should_continue: bool,
-    pub debug_mode: bool
+    pub debug_mode: bool,
+    pub current_ui: Ui,
+}
+
+pub enum Ui {
+    Start,
+    _Game,
+    _Settings,
 }
 
 /**
@@ -30,7 +37,8 @@ pub fn init_game_state() -> GameState {
     let gs = GameState {
         global_config: gc,
         should_continue: true,
-        debug_mode: false
+        debug_mode: false,
+        current_ui: Ui::Start,
     };
 
     return gs;

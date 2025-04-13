@@ -2,7 +2,9 @@ use std::error::Error;
 
 use crate::{
     asset_manager::AssetManager,
-    draw_system::{DebugUiTextures, DrawSystem, Layer, Scene, SolidRect, UiTexture, draw_text},
+    draw_system::{
+        DebugUiTextures, DrawSystem, Layer, Scene, SolidRect, StartUiTextures, UiTexture, draw_text,
+    },
     game_state::{GameState, LinuxWindowServer, init_game_state},
 };
 
@@ -76,18 +78,24 @@ fn game_loop(global_state: &mut GameState) -> Result<(), Box<dyn Error>> {
     let asset_manager = AssetManager::init()?;
     let default_font = asset_manager.load_default_font(20f32)?;
     let debug_label = draw_text(&texture_creator, &default_font, "this is debug overlay")?;
+    let start_game_label = draw_text(&texture_creator, &default_font, "start new game")?;
+    let exit_game_label = draw_text(&texture_creator, &default_font, "exit game")?;
 
     let mut draw_system = DrawSystem::init(
         UiTexture {
             debug: DebugUiTextures {
                 debug_info_labels: debug_label,
             },
+            start: StartUiTextures {
+                start_new_game_label: start_game_label,
+                exit_game_label: exit_game_label,
+            },
         },
         canvas,
     )?;
 
     while global_state.should_continue {
-        draw_system.draw_function(&scene, global_state.debug_mode)?;
+        draw_system.draw_function(&scene, global_state.debug_mode, &global_state.current_ui)?;
 
         for event in event_pump.poll_iter() {
             match event {
@@ -99,7 +107,7 @@ fn game_loop(global_state: &mut GameState) -> Result<(), Box<dyn Error>> {
                     global_state.should_continue = false;
                     break;
                 }
-                Event::KeyDown { 
+                Event::KeyDown {
                     keycode: Some(Keycode::F3),
                     ..
                 } => {

@@ -7,6 +7,8 @@ use sdl3::{
     video::{Window, WindowContext},
 };
 
+use crate::game_state::Ui;
+
 pub struct SolidRect {
     pub rect: FRect,
     pub fill_color: Color,
@@ -31,36 +33,29 @@ pub struct Scene<'texture> {
     pub layers: Vec<Layer<'texture>>,
 }
 
-pub enum Ui {
-    Start,
-    Game,
-    Settings,
-    Debug,
-}
-
 impl Display for Ui {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let ui_string = match self {
             Ui::Start => "Start",
-            Ui::Debug => "Debug",
-            Ui::Game => "Game",
-            Ui::Settings => "Settings",
+            Ui::_Game => "Game",
+            Ui::_Settings => "Settings",
         };
         f.write_fmt(format_args!("Ui: {}", ui_string))
     }
-}
-
-#[test]
-fn test_display() {
-    assert_eq!(format!("{}", Ui::Debug), "Ui: Debug")
 }
 
 pub struct DebugUiTextures<'a> {
     pub debug_info_labels: Texture<'a>,
 }
 
+pub struct StartUiTextures<'a> {
+    pub start_new_game_label: Texture<'a>,
+    pub exit_game_label: Texture<'a>,
+}
+
 pub struct UiTexture<'a> {
     pub debug: DebugUiTextures<'a>,
+    pub start: StartUiTextures<'a>,
 }
 
 pub struct DrawSystem<'a> {
@@ -79,7 +74,12 @@ impl<'a> DrawSystem<'a> {
         })
     }
 
-    pub fn draw_function(&mut self, scene: &Scene, debug_mode: bool) -> Result<(), anyhow::Error> {
+    pub fn draw_function(
+        &mut self,
+        scene: &Scene,
+        debug_mode: bool,
+        ui: &Ui,
+    ) -> Result<(), anyhow::Error> {
         // reset the background
         self.canvas.set_draw_color(Color::RGB(0, 0, 0));
         self.canvas.clear();
@@ -108,17 +108,19 @@ impl<'a> DrawSystem<'a> {
 
         // draw the ui
         if debug_mode {
-            self.draw_ui(Ui::Debug)?;
+            self.draw_debug()?;
         }
+
+        self.draw_ui(ui)?;
 
         // present the scene
         self.canvas.present();
         Ok(())
     }
 
-    fn draw_ui(&mut self, ui: Ui) -> Result<(), anyhow::Error> {
+    fn draw_ui(&mut self, ui: &Ui) -> Result<(), anyhow::Error> {
         match ui {
-            Ui::Debug => self.draw_debug(),
+            Ui::Start => self.draw_start_menu(),
             _ => Err(anyhow::Error::msg(format!(
                 "This ui: {} is not yet implemented",
                 ui
@@ -141,6 +143,51 @@ impl<'a> DrawSystem<'a> {
 
         Ok(())
     }
+
+    fn draw_start_menu(&mut self) -> Result<(), anyhow::Error> {
+        let start_new_game_rect = FRect {
+            x: 60f32,
+            y: 40f32,
+            w: 200f32,
+            h: 20f32,
+        };
+
+        let exit_rect = FRect {
+            x: 60f32,
+            y: 80f32,
+            w: 200f32,
+            h: 20f32,
+        };
+        self.canvas.copy(
+            &self.ui_textures.start.start_new_game_label,
+            None,
+            Some(start_new_game_rect),
+        )?;
+
+        self.canvas.copy(
+            &self.ui_textures.start.exit_game_label,
+            None,
+            Some(exit_rect),
+        )?;
+
+        let color = self.canvas.draw_color();
+
+        self.canvas.set_draw_color(Color::RGBA(255, 0, 0, 255));
+        self.canvas.draw_line(
+            FPoint {
+                x: start_new_game_rect.x,
+                y: start_new_game_rect.y + start_new_game_rect.h,
+            },
+            FPoint {
+                x: start_new_game_rect.x + start_new_game_rect.w,
+                y: start_new_game_rect.y + start_new_game_rect.h,
+            },
+        )?;
+
+        self.canvas.set_draw_color(color);
+
+        Ok(())
+    }
 }
 
 // Draws text to texture
@@ -154,7 +201,6 @@ pub fn draw_text<'a>(
         .blended(Color::RGBA(0, 255, 0, 255))
         .map_err(|e| anyhow::Error::msg(e.to_string()))?;
 
-    
     Ok(texture_creator
         .create_texture_from_surface(&surface)
         .map_err(|e| anyhow::Error::msg(e.to_string()))?)

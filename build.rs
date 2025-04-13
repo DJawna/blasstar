@@ -17,7 +17,7 @@ fn main() {
         let current_file = file.unwrap();
         fs::copy(
             current_file.path(),
-            &font_output.join(current_file.file_name()),
+            font_output.join(current_file.file_name()),
         )
         .unwrap();
     });

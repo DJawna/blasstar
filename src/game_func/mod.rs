@@ -77,18 +77,16 @@ fn game_loop(global_state: &mut GameState) -> Result<(), Box<dyn Error>> {
     let texture_creator = canvas.texture_creator();
     let asset_manager = AssetManager::init()?;
     let default_font = asset_manager.load_default_font(20f32)?;
-    let debug_label = draw_text(&texture_creator, &default_font, "this is debug overlay")?;
-    let start_game_label = draw_text(&texture_creator, &default_font, "start new game")?;
+    let debug_info_labels = draw_text(&texture_creator, &default_font, "this is debug overlay")?;
+    let start_new_game_label = draw_text(&texture_creator, &default_font, "start new game")?;
     let exit_game_label = draw_text(&texture_creator, &default_font, "exit game")?;
 
     let mut draw_system = DrawSystem::init(
         UiTexture {
-            debug: DebugUiTextures {
-                debug_info_labels: debug_label,
-            },
+            debug: DebugUiTextures { debug_info_labels },
             start: StartUiTextures {
-                start_new_game_label: start_game_label,
-                exit_game_label: exit_game_label,
+                start_new_game_label,
+                exit_game_label,
             },
         },
         canvas,
@@ -125,10 +123,10 @@ fn start_window(
     video_system: VideoSubsystem,
     width: u32,
     height: u32,
-) -> Result<Window, Box<dyn Error>> {
-    Ok(video_system
+) -> Result<Window, anyhow::Error> {
+    video_system
         .window("blastar", width, height)
         .position_centered()
         .build()
-        .map_err(|op| Box::new(op))?)
+        .map_err(|op| anyhow::Error::msg(op.to_string()))
 }

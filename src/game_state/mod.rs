@@ -34,12 +34,10 @@ pub fn init_game_state() -> GameState {
         linux_window_server: LinuxWindowServer::Wayland,
     };
 
-    let gs = GameState {
+    GameState {
         global_config: gc,
         should_continue: true,
         debug_mode: false,
         current_ui: Ui::Start,
-    };
-
-    return gs;
+    }
 }

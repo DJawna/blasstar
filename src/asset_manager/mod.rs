@@ -8,9 +8,7 @@ impl AssetManager {
     pub fn init() -> Result<AssetManager, anyhow::Error> {
         let ttf_context = sdl3::ttf::init().map_err(|e| anyhow::Error::msg(e.to_string()))?;
 
-        Ok(AssetManager {
-            ttf_context: ttf_context,
-        })
+        Ok(AssetManager { ttf_context })
     }
 
     fn load_font<'a>(
@@ -21,10 +19,7 @@ impl AssetManager {
         Ok(self.ttf_context.load_font(path, point_size)?)
     }
 
-    pub fn load_default_font<'a>(
-        &'a self,
-        point_size: f32,
-    ) -> Result<Font<'a, 'static>, anyhow::Error> {
+    pub fn load_default_font(&self, point_size: f32) -> Result<Font<'_, 'static>, anyhow::Error> {
         self.load_font("./assets/fonts/orbitron-latin-500-normal.ttf", point_size)
     }
 }

@@ -12,12 +12,11 @@ fn main() {
 
     let result = game_func();
 
-    match result {
-        Err(err) => log_critical(
+    if let Err(err) = result {
+        log_critical(
             Category::Application,
             format!("game terminated with: {err}").as_str(),
-        ),
-        Ok(_) => (),
+        )
     };
 
     log_info(Category::Application, "End Blastar.");

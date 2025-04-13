@@ -22,3 +22,20 @@ cargo build
 ```
 cargo run
 ```
+
+
+## What is the game about
+
+- 2D shootemp
+- vertical scrolling
+- item pickups
+- ship upgrades (shields, weapons)
+- Bossfights at the end of each level
+- Bonus weapons
+
+
+## Todos:
+
+- [ ] implement start menu (with start new game and exit option)
+- [ ] start the first level (with a placeholder texture for player)
+- [ ] implement the pause screen (with unpause and exit option)

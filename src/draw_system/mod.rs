@@ -154,6 +154,7 @@ pub fn draw_text<'a>(
         .blended(Color::RGBA(0, 255, 0, 255))
         .map_err(|e| anyhow::Error::msg(e.to_string()))?;
 
+    
     Ok(texture_creator
         .create_texture_from_surface(&surface)
         .map_err(|e| anyhow::Error::msg(e.to_string()))?)

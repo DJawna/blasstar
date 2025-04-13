@@ -44,3 +44,4 @@ cargo run
 - [ ] start the first level (with a placeholder texture for player)
 - [ ] implement the pause screen (with unpause and exit option)
 - [ ] fix the text rendering so the textfields are not improperly scaled
+- [ ] add frame rate counter to debug overlay

@@ -1,4 +1,4 @@
-use std::error::Error;
+use std::{error::Error, thread, time::Instant};
 
 use crate::{
     asset_manager::AssetManager,
@@ -93,6 +93,7 @@ fn game_loop(global_state: &mut GameState) -> Result<(), Box<dyn Error>> {
     )?;
 
     while global_state.should_continue {
+        let start_of_frame = Instant::now();
         draw_system.draw_function(&scene, global_state.debug_mode, &global_state.current_ui)?;
 
         for event in event_pump.poll_iter() {
@@ -129,6 +130,12 @@ fn game_loop(global_state: &mut GameState) -> Result<(), Box<dyn Error>> {
         }
 
         global_state.process_input();
+        let measured_frame_time = start_of_frame.elapsed();
+        if measured_frame_time < global_state.global_config.desired_frame_time {
+            let sleep_delay =
+                measured_frame_time.abs_diff(global_state.global_config.desired_frame_time);
+            thread::sleep(sleep_delay);
+        }
     }
     log_debug(Category::Application, "Stopping the Game loop...");
     Ok(())

@@ -8,7 +8,7 @@ fn main() {
         .nth(3)
         .unwrap()
         .join("assets")
-        .join("font");
+        .join("fonts");
     // create the font folder in output folder
     fs::create_dir_all(&font_output).unwrap();
     let font_assets_path = Path::new("./assets/fonts");

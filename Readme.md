@@ -36,6 +36,7 @@ cargo run
 
 ## Todos:
 
+- [x] add frame rate limit mechanism
 - [ ] implement start menu (with start new game and exit option)
   - [x] render the options and add red underline for selected option
   - [x] make the selected option move arround on cursor up and down

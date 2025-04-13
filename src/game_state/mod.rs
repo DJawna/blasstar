@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::{fmt::Display, time::Duration};
 
 #[derive(PartialEq)]
 #[allow(dead_code)]
@@ -11,6 +11,7 @@ pub struct GlobalConfig {
     pub width: u32,
     pub height: u32,
     pub linux_window_server: LinuxWindowServer,
+    pub desired_frame_time: Duration,
 }
 
 pub struct GameState {
@@ -99,6 +100,7 @@ pub fn init_game_state() -> GameState {
         width: 800,
         height: 600,
         linux_window_server: LinuxWindowServer::Wayland,
+        desired_frame_time: Duration::from_micros(1_000_000 / 120),
     };
 
     GameState {

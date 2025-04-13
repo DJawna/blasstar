@@ -38,7 +38,8 @@ cargo run
 
 - [ ] implement start menu (with start new game and exit option)
   - [x] render the options and add red underline for selected option
-  - [ ] make the selected option move arround on cursor up and down
+  - [x] make the selected option move arround on cursor up and down
   - [ ] implement enter button react to start and exit
 - [ ] start the first level (with a placeholder texture for player)
 - [ ] implement the pause screen (with unpause and exit option)
+- [ ] fix the text rendering so the textfields are not improperly scaled

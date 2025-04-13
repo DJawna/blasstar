@@ -5,7 +5,7 @@ use crate::{
     draw_system::{
         DebugUiTextures, DrawSystem, Layer, Scene, SolidRect, StartUiTextures, UiTexture, draw_text,
     },
-    game_state::{GameState, LinuxWindowServer, init_game_state},
+    game_state::{DPadDirection, GameInput, GameState, LinuxWindowServer, init_game_state},
 };
 
 use sdl3::{
@@ -77,13 +77,13 @@ fn game_loop(global_state: &mut GameState) -> Result<(), Box<dyn Error>> {
     let texture_creator = canvas.texture_creator();
     let asset_manager = AssetManager::init()?;
     let default_font = asset_manager.load_default_font(20f32)?;
-    let debug_info_labels = draw_text(&texture_creator, &default_font, "this is debug overlay")?;
+    let debug_info_label = draw_text(&texture_creator, &default_font, "this is debug overlay")?;
     let start_new_game_label = draw_text(&texture_creator, &default_font, "start new game")?;
     let exit_game_label = draw_text(&texture_creator, &default_font, "exit game")?;
 
     let mut draw_system = DrawSystem::init(
         UiTexture {
-            debug: DebugUiTextures { debug_info_labels },
+            debug: DebugUiTextures { debug_info_label },
             start: StartUiTextures {
                 start_new_game_label,
                 exit_game_label,
@@ -97,23 +97,38 @@ fn game_loop(global_state: &mut GameState) -> Result<(), Box<dyn Error>> {
 
         for event in event_pump.poll_iter() {
             match event {
-                Event::Quit { .. }
-                | Event::KeyDown {
-                    keycode: Some(Keycode::Escape),
-                    ..
-                } => {
+                Event::Quit { .. } => {
                     global_state.should_continue = false;
                     break;
                 }
                 Event::KeyDown {
-                    keycode: Some(Keycode::F3),
+                    keycode: Some(key_code),
                     ..
-                } => {
-                    global_state.debug_mode = !global_state.debug_mode;
-                }
+                } => match key_code {
+                    Keycode::F3 => {
+                        global_state.debug_mode = !global_state.debug_mode;
+                    }
+                    Keycode::Escape => {
+                        global_state.should_continue = false;
+                        break;
+                    }
+                    Keycode::Up => {
+                        global_state.game_input = GameInput {
+                            _d_pad_input: DPadDirection::Up,
+                        }
+                    }
+                    Keycode::Down => {
+                        global_state.game_input = GameInput {
+                            _d_pad_input: DPadDirection::Down,
+                        }
+                    }
+                    _ => {}
+                },
                 _ => {}
             }
         }
+
+        global_state.process_input();
     }
     log_debug(Category::Application, "Stopping the Game loop...");
     Ok(())

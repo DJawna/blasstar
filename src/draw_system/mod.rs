@@ -1,5 +1,3 @@
-use std::fmt::Display;
-
 use sdl3::{
     pixels::Color,
     render::{Canvas, FPoint, FRect, Texture, TextureCreator},
@@ -7,7 +5,7 @@ use sdl3::{
     video::{Window, WindowContext},
 };
 
-use crate::game_state::Ui;
+use crate::game_state::{StartMenuOptions, Ui};
 
 pub struct SolidRect {
     pub rect: FRect,
@@ -33,19 +31,8 @@ pub struct Scene<'texture> {
     pub layers: Vec<Layer<'texture>>,
 }
 
-impl Display for Ui {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let ui_string = match self {
-            Ui::Start => "Start",
-            Ui::_Game => "Game",
-            Ui::_Settings => "Settings",
-        };
-        f.write_fmt(format_args!("Ui: {}", ui_string))
-    }
-}
-
 pub struct DebugUiTextures<'a> {
-    pub debug_info_labels: Texture<'a>,
+    pub debug_info_label: Texture<'a>,
 }
 
 pub struct StartUiTextures<'a> {
@@ -120,7 +107,7 @@ impl<'a> DrawSystem<'a> {
 
     fn draw_ui(&mut self, ui: &Ui) -> Result<(), anyhow::Error> {
         match ui {
-            Ui::Start => self.draw_start_menu(),
+            Ui::Start(selected_option) => self.draw_start_menu(selected_option),
             _ => Err(anyhow::Error::msg(format!(
                 "This ui: {} is not yet implemented",
                 ui
@@ -136,7 +123,7 @@ impl<'a> DrawSystem<'a> {
             h: 20f32,
         };
         self.canvas.copy(
-            &self.ui_textures.debug.debug_info_labels,
+            &self.ui_textures.debug.debug_info_label,
             None,
             Some(dest_rect),
         )?;
@@ -144,7 +131,10 @@ impl<'a> DrawSystem<'a> {
         Ok(())
     }
 
-    fn draw_start_menu(&mut self) -> Result<(), anyhow::Error> {
+    fn draw_start_menu(
+        &mut self,
+        start_menu_option: &StartMenuOptions,
+    ) -> Result<(), anyhow::Error> {
         let start_new_game_rect = FRect {
             x: 60f32,
             y: 40f32,
@@ -173,14 +163,34 @@ impl<'a> DrawSystem<'a> {
         let color = self.canvas.draw_color();
 
         self.canvas.set_draw_color(Color::RGBA(255, 0, 0, 255));
+
+        let (selected_option_marker, marker_width, marker_height) = match start_menu_option {
+            StartMenuOptions::StartNewGame => (
+                FPoint {
+                    x: start_new_game_rect.x,
+                    y: start_new_game_rect.y,
+                },
+                start_new_game_rect.w,
+                start_new_game_rect.h,
+            ),
+            StartMenuOptions::ExitGame => (
+                FPoint {
+                    x: exit_rect.x,
+                    y: exit_rect.y,
+                },
+                exit_rect.w,
+                exit_rect.h,
+            ),
+        };
+
         self.canvas.draw_line(
             FPoint {
-                x: start_new_game_rect.x,
-                y: start_new_game_rect.y + start_new_game_rect.h,
+                x: selected_option_marker.x,
+                y: selected_option_marker.y + marker_height,
             },
             FPoint {
-                x: start_new_game_rect.x + start_new_game_rect.w,
-                y: start_new_game_rect.y + start_new_game_rect.h,
+                x: selected_option_marker.x + marker_width,
+                y: selected_option_marker.y + marker_height,
             },
         )?;
 

@@ -34,6 +34,12 @@ cargo run
 - Bonus weapons
 
 
+## Licenses
+
+The Game itself:
+- GPLv3 [License](./License)
+- Font [see license in the font folder](./assets/fonts/LICENSE-OrbitronFont)
+
 ## Todos:
 
 - [x] add frame rate limit mechanism

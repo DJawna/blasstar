@@ -79,7 +79,7 @@ impl<'a> DrawSystem<'a> {
         })
     }
 
-    pub fn draw_function(&mut self, scene: &Scene) -> Result<(), anyhow::Error> {
+    pub fn draw_function(&mut self, scene: &Scene, debug_mode: bool) -> Result<(), anyhow::Error> {
         // reset the background
         self.canvas.set_draw_color(Color::RGB(0, 0, 0));
         self.canvas.clear();
@@ -107,7 +107,9 @@ impl<'a> DrawSystem<'a> {
         }
 
         // draw the ui
-        self.draw_ui(Ui::Debug)?;
+        if debug_mode {
+            self.draw_ui(Ui::Debug)?;
+        }
 
         // present the scene
         self.canvas.present();

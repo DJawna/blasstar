@@ -87,7 +87,7 @@ fn game_loop(global_state: &mut GameState) -> Result<(), Box<dyn Error>> {
     )?;
 
     while global_state.should_continue {
-        draw_system.draw_function(&scene)?;
+        draw_system.draw_function(&scene, global_state.debug_mode)?;
 
         for event in event_pump.poll_iter() {
             match event {
@@ -98,6 +98,12 @@ fn game_loop(global_state: &mut GameState) -> Result<(), Box<dyn Error>> {
                 } => {
                     global_state.should_continue = false;
                     break;
+                }
+                Event::KeyDown { 
+                    keycode: Some(Keycode::F3),
+                    ..
+                } => {
+                    global_state.debug_mode = !global_state.debug_mode;
                 }
                 _ => {}
             }

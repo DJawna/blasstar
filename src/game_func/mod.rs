@@ -129,7 +129,7 @@ fn game_loop(global_state: &mut GameState) -> Result<(), Box<dyn Error>> {
             }
         }
 
-        global_state.process_input();
+        global_state.update_game_state();
         let measured_frame_time = start_of_frame.elapsed();
         if measured_frame_time < global_state.global_config.desired_frame_time {
             let sleep_delay =

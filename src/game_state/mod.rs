@@ -43,7 +43,7 @@ pub enum Ui {
 
 impl GameState {
     /// this method will process the input of the `GameState` it will update all the systems and uis
-    pub fn process_input(&mut self) {
+    pub fn update_game_state(&mut self) {
         // Todo: should be a generic method: There were any inputs yes or no
         if self.game_input._d_pad_input == DPadDirection::None {
             return;

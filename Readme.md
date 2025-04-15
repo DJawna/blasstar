@@ -43,7 +43,7 @@ The Game itself:
 ## Todos:
 
 - [x] add frame rate limit mechanism
-- [ ] add the event processing loop into the update state method
+- [x] add the event processing loop into the update state method
 - [ ] transform the esc button gesture to sdl event quit event
 - [ ] modify the start menu update function so it sends Quit event when button exit selected and user prsses enter
 - [ ] implement start menu (with start new game and exit option)

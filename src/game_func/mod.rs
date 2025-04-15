@@ -5,14 +5,12 @@ use crate::{
     draw_system::{
         DebugUiTextures, DrawSystem, Layer, Scene, SolidRect, StartUiTextures, UiTexture, draw_text,
     },
-    game_state::{DPadDirection, GameInput, GameState, LinuxWindowServer, init_game_state},
+    game_state::{GameState, LinuxWindowServer, init_game_state},
 };
 
 use sdl3::{
     VideoSubsystem,
-    event::Event,
     hint::set,
-    keyboard::Keycode,
     log::{Category, log_debug},
     pixels::Color,
     render::FRect,
@@ -94,42 +92,11 @@ fn game_loop(global_state: &mut GameState) -> Result<(), Box<dyn Error>> {
 
     while global_state.should_continue {
         let start_of_frame = Instant::now();
+
+        global_state.update_game_state(event_pump.poll_iter());
+
         draw_system.draw_function(&scene, global_state.debug_mode, &global_state.current_ui)?;
 
-        for event in event_pump.poll_iter() {
-            match event {
-                Event::Quit { .. } => {
-                    global_state.should_continue = false;
-                    break;
-                }
-                Event::KeyDown {
-                    keycode: Some(key_code),
-                    ..
-                } => match key_code {
-                    Keycode::F3 => {
-                        global_state.debug_mode = !global_state.debug_mode;
-                    }
-                    Keycode::Escape => {
-                        global_state.should_continue = false;
-                        break;
-                    }
-                    Keycode::Up => {
-                        global_state.game_input = GameInput {
-                            _d_pad_input: DPadDirection::Up,
-                        }
-                    }
-                    Keycode::Down => {
-                        global_state.game_input = GameInput {
-                            _d_pad_input: DPadDirection::Down,
-                        }
-                    }
-                    _ => {}
-                },
-                _ => {}
-            }
-        }
-
-        global_state.update_game_state();
         let measured_frame_time = start_of_frame.elapsed();
         if measured_frame_time < global_state.global_config.desired_frame_time {
             let sleep_delay =

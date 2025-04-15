@@ -1,5 +1,10 @@
 use std::{fmt::Display, time::Duration};
 
+use sdl3::{
+    event::{Event, EventPollIterator},
+    keyboard::Keycode,
+};
+
 #[derive(PartialEq)]
 #[allow(dead_code)]
 pub enum LinuxWindowServer {
@@ -43,7 +48,40 @@ pub enum Ui {
 
 impl GameState {
     /// this method will process the input of the `GameState` it will update all the systems and uis
-    pub fn update_game_state(&mut self) {
+    pub fn update_game_state(&mut self, event_iterator: EventPollIterator) {
+        for event in event_iterator {
+            match event {
+                Event::Quit { .. } => {
+                    self.should_continue = false;
+                    break;
+                }
+                Event::KeyDown {
+                    keycode: Some(key_code),
+                    ..
+                } => match key_code {
+                    Keycode::F3 => {
+                        self.debug_mode = !self.debug_mode;
+                    }
+                    Keycode::Escape => {
+                        self.should_continue = false;
+                        break;
+                    }
+                    Keycode::Up => {
+                        self.game_input = GameInput {
+                            _d_pad_input: DPadDirection::Up,
+                        }
+                    }
+                    Keycode::Down => {
+                        self.game_input = GameInput {
+                            _d_pad_input: DPadDirection::Down,
+                        }
+                    }
+                    _ => {}
+                },
+                _ => {}
+            }
+        }
+
         // Todo: should be a generic method: There were any inputs yes or no
         if self.game_input._d_pad_input == DPadDirection::None {
             return;

@@ -1,7 +1,7 @@
-use std::{fmt::Display, time::Duration};
+use std::{fmt::Display, time::{Duration, Instant}};
 
 use sdl3::{
-    event::{Event, EventPollIterator},
+    event::{Event, EventPollIterator, EventSender},
     keyboard::Keycode,
 };
 
@@ -25,6 +25,8 @@ pub struct GameState {
     pub debug_mode: bool,
     pub current_ui: Ui,
     pub game_input: GameInput,
+    pub event_sender: Option<EventSender>,
+    pub sdl_init_time: Option<Instant>,
 }
 
 pub struct GameInput {
@@ -45,10 +47,11 @@ pub enum Ui {
     _Game,
     _Settings,
 }
-
+const EVENTSENDERNOTINITIAL: &str = "The event sender must be initialized and assigned to global state manager before the first call to the update method of global state";
 impl GameState {
     /// this method will process the input of the `GameState` it will update all the systems and uis
-    pub fn update_game_state(&mut self, event_iterator: EventPollIterator) {
+    pub fn update_game_state(&mut self, event_iterator: EventPollIterator) -> Result<(), anyhow::Error>{
+        let event_sender = self.event_sender.as_ref().expect(EVENTSENDERNOTINITIAL);
         for event in event_iterator {
             match event {
                 Event::Quit { .. } => {
@@ -63,8 +66,7 @@ impl GameState {
                         self.debug_mode = !self.debug_mode;
                     }
                     Keycode::Escape => {
-                        self.should_continue = false;
-                        break;
+                        event_sender.push_event(Event::Quit { timestamp: self.get_ns_since_sdlinit()})?
                     }
                     Keycode::Up => {
                         self.game_input = GameInput {
@@ -84,10 +86,16 @@ impl GameState {
 
         // Todo: should be a generic method: There were any inputs yes or no
         if self.game_input._d_pad_input == DPadDirection::None {
-            return;
+            return Ok(());
         }
         self.current_ui = self.current_ui.process_input(&self.game_input);
         self.game_input._d_pad_input = DPadDirection::None;
+        Ok(())
+    }
+
+    fn get_ns_since_sdlinit(&self) -> u64 {
+        let init_time = self.sdl_init_time.expect("Programming error: sdl_init_time property of global state was not initialized before the first call to `get_ns_since_sdlinit`");
+        init_time.elapsed().as_nanos() as u64
     }
 }
 
@@ -149,5 +157,8 @@ pub fn init_game_state() -> GameState {
         game_input: GameInput {
             _d_pad_input: DPadDirection::None,
         },
+        event_sender: None,
+        sdl_init_time: None,
     }
+
 }

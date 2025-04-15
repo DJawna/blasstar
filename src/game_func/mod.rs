@@ -34,6 +34,9 @@ fn game_loop(global_state: &mut GameState) -> Result<(), Box<dyn Error>> {
         set("SDL_VIDEO_DRIVER", "Wayland");
     }
     let sdl_context = sdl3::init()?;
+    let sdl_init_time = Instant::now();
+    global_state.sdl_init_time = Some(sdl_init_time);
+    let event_subsystem = sdl_context.event()?;
     let video_subsystem = sdl_context.video()?;
 
     let window = start_window(
@@ -90,10 +93,12 @@ fn game_loop(global_state: &mut GameState) -> Result<(), Box<dyn Error>> {
         canvas,
     )?;
 
+    global_state.event_sender = Some(event_subsystem.event_sender());
+
     while global_state.should_continue {
         let start_of_frame = Instant::now();
 
-        global_state.update_game_state(event_pump.poll_iter());
+        global_state.update_game_state(event_pump.poll_iter())?;
 
         draw_system.draw_function(&scene, global_state.debug_mode, &global_state.current_ui)?;
 

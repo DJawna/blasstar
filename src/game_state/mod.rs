@@ -1,4 +1,7 @@
-use std::{fmt::Display, time::{Duration, Instant}};
+use std::{
+    fmt::Display,
+    time::{Duration, Instant},
+};
 
 use sdl3::{
     event::{Event, EventPollIterator, EventSender},
@@ -50,7 +53,10 @@ pub enum Ui {
 const EVENTSENDERNOTINITIAL: &str = "The event sender must be initialized and assigned to global state manager before the first call to the update method of global state";
 impl GameState {
     /// this method will process the input of the `GameState` it will update all the systems and uis
-    pub fn update_game_state(&mut self, event_iterator: EventPollIterator) -> Result<(), anyhow::Error>{
+    pub fn update_game_state(
+        &mut self,
+        event_iterator: EventPollIterator,
+    ) -> Result<(), anyhow::Error> {
         let event_sender = self.event_sender.as_ref().expect(EVENTSENDERNOTINITIAL);
         for event in event_iterator {
             match event {
@@ -65,9 +71,9 @@ impl GameState {
                     Keycode::F3 => {
                         self.debug_mode = !self.debug_mode;
                     }
-                    Keycode::Escape => {
-                        event_sender.push_event(Event::Quit { timestamp: self.get_ns_since_sdlinit()})?
-                    }
+                    Keycode::Escape => event_sender.push_event(Event::Quit {
+                        timestamp: self.get_ns_since_sdlinit(),
+                    })?,
                     Keycode::Up => {
                         self.game_input = GameInput {
                             _d_pad_input: DPadDirection::Up,
@@ -160,5 +166,4 @@ pub fn init_game_state() -> GameState {
         event_sender: None,
         sdl_init_time: None,
     }
-
 }

@@ -107,7 +107,7 @@ impl<'a> DrawSystem<'a> {
 
     fn draw_ui(&mut self, ui: &Ui) -> Result<(), anyhow::Error> {
         match ui {
-            Ui::Start(selected_option) => self.draw_start_menu(selected_option),
+            Ui::Start(start_menu_state) => self.draw_start_menu(&start_menu_state.selected_option),
             _ => Err(anyhow::Error::msg(format!(
                 "This ui: {} is not yet implemented",
                 ui
@@ -173,7 +173,7 @@ impl<'a> DrawSystem<'a> {
                 start_new_game_rect.w,
                 start_new_game_rect.h,
             ),
-            StartMenuOptions::ExitGame => (
+            StartMenuOptions::_ExitGame => (
                 FPoint {
                     x: exit_rect.x,
                     y: exit_rect.y,

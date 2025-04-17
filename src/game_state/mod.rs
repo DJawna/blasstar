@@ -5,7 +5,7 @@ use std::{
 
 use sdl3::{
     event::{Event, EventPollIterator, EventSender},
-    keyboard::Keycode,
+    keyboard::Keycode, log::log_debug,
 };
 
 #[derive(PartialEq)]
@@ -27,16 +27,19 @@ pub struct GameState {
     pub should_continue: bool,
     pub debug_mode: bool,
     pub current_ui: Ui,
-    pub game_input: GameInput,
     pub event_sender: Option<EventSender>,
     pub sdl_init_time: Option<Instant>,
 }
 
 pub struct GameInput {
+    // the direction
     pub _d_pad_input: DPadDirection,
+
+    // the confirmation gesture has been triggered by the user
+    pub confirm_gesture: bool,
 }
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Copy, Clone)]
 pub enum DPadDirection {
     None,
     Up,
@@ -46,11 +49,26 @@ pub enum DPadDirection {
 }
 
 pub enum Ui {
-    Start(StartMenuOptions),
+    Start(StartMenuState),
     _Game,
     _Settings,
 }
+
+pub struct StartMenuState {
+    pub selected_option: StartMenuOptions,
+}
+
+impl GameInput {
+    fn empty() -> GameInput {
+        GameInput {
+            _d_pad_input: DPadDirection::None,
+            confirm_gesture: false,
+        }
+    }
+}
+
 const EVENTSENDERNOTINITIAL: &str = "The event sender must be initialized and assigned to global state manager before the first call to the update method of global state";
+
 impl GameState {
     /// this method will process the input of the `GameState` it will update all the systems and uis
     pub fn update_game_state(
@@ -58,6 +76,8 @@ impl GameState {
         event_iterator: EventPollIterator,
     ) -> Result<(), anyhow::Error> {
         let event_sender = self.event_sender.as_ref().expect(EVENTSENDERNOTINITIAL);
+        let mut game_input = GameInput::empty();
+
         for event in event_iterator {
             match event {
                 Event::Quit { .. } => {
@@ -75,14 +95,17 @@ impl GameState {
                         timestamp: self.get_ns_since_sdlinit(),
                     })?,
                     Keycode::Up => {
-                        self.game_input = GameInput {
-                            _d_pad_input: DPadDirection::Up,
-                        }
+                        log_debug(sdl3::log::Category::Input, "up button pressed");
+                        game_input._d_pad_input = DPadDirection::Up;
                     }
                     Keycode::Down => {
-                        self.game_input = GameInput {
-                            _d_pad_input: DPadDirection::Down,
-                        }
+
+                        log_debug(sdl3::log::Category::Input, "down button pressed");
+                        game_input._d_pad_input = DPadDirection::Down;
+                    },
+                    Keycode::Return => {
+                        log_debug(sdl3::log::Category::Input, "return button pressed");
+                        game_input.confirm_gesture = true;
                     }
                     _ => {}
                 },
@@ -91,11 +114,11 @@ impl GameState {
         }
 
         // Todo: should be a generic method: There were any inputs yes or no
-        if self.game_input._d_pad_input == DPadDirection::None {
+        if game_input._d_pad_input == DPadDirection::None {
             return Ok(());
         }
-        self.current_ui = self.current_ui.process_input(&self.game_input);
-        self.game_input._d_pad_input = DPadDirection::None;
+        self.current_ui
+            .update_ui_state(&game_input, event_sender, self.get_ns_since_sdlinit())?;
         Ok(())
     }
 
@@ -107,10 +130,17 @@ impl GameState {
 
 impl Ui {
     /// this method will process the input
-    pub fn process_input(&self, _input: &GameInput) -> Ui {
+    pub fn update_ui_state(
+        &mut self,
+        input: &GameInput,
+        event_sender: &EventSender,
+        timestamp: u64,
+    ) -> Result<(), anyhow::Error> {
         match self {
             // Todo: the direction is currently not doing anything since there are only two options in the startmenu
-            Ui::Start(start_menu_option) => Ui::Start(start_menu_option.next_option(true)),
+            Ui::Start(start_menu_option) => {
+                start_menu_option.update_state(input, event_sender, timestamp)
+            }
             _ => todo!("porcess input is not yet implemented for the other menus"),
         }
     }
@@ -127,19 +157,39 @@ impl Display for Ui {
     }
 }
 
+#[derive(Clone, Copy)]
 pub enum StartMenuOptions {
     StartNewGame,
-    ExitGame,
+    _ExitGame,
 }
 
-impl StartMenuOptions {
-    /// gets the next option dependending on the current option and the direction of the next step
-    ///
-    /// `direction_up` if true goes up in the option otherwise goes down in the options
-    pub fn next_option(&self, _direction_up: bool) -> StartMenuOptions {
-        match self {
-            StartMenuOptions::StartNewGame => StartMenuOptions::ExitGame,
-            StartMenuOptions::ExitGame => StartMenuOptions::StartNewGame,
+impl StartMenuState {
+    fn update_state(
+        &mut self,
+        game_input: &GameInput,
+        event_sender: &EventSender,
+        timestamp: u64,
+    ) -> Result<(), anyhow::Error> {
+        match (
+            self.selected_option,
+            game_input._d_pad_input,
+            game_input.confirm_gesture,
+        ) {
+            (StartMenuOptions::_ExitGame, DPadDirection::Down | DPadDirection::Up, _) => {
+                self.selected_option = StartMenuOptions::StartNewGame;
+                Ok(())
+            }
+            (StartMenuOptions::StartNewGame, DPadDirection::Down | DPadDirection::Up, _) => {
+                self.selected_option = StartMenuOptions::_ExitGame;
+                Ok(())
+            }
+            (StartMenuOptions::_ExitGame, _, true) => {
+                Ok(event_sender.push_event(Event::Quit { timestamp })?)
+            }
+            (StartMenuOptions::StartNewGame, _, true) => {
+                Err(anyhow::Error::msg("Start new game not yet implemented"))
+            }
+            (_, _, _) => Ok(()),
         }
     }
 }
@@ -159,10 +209,9 @@ pub fn init_game_state() -> GameState {
         global_config: gc,
         should_continue: true,
         debug_mode: false,
-        current_ui: Ui::Start(StartMenuOptions::StartNewGame),
-        game_input: GameInput {
-            _d_pad_input: DPadDirection::None,
-        },
+        current_ui: Ui::Start(StartMenuState {
+            selected_option: StartMenuOptions::StartNewGame,
+        }),
         event_sender: None,
         sdl_init_time: None,
     }

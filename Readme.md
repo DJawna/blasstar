@@ -49,7 +49,6 @@ The Game itself:
 
 ## Todos:
 
-- [ ] fix bug: check if any input was true not just cursor up and down (maby implement equals method?)
 - [x] add frame rate limit mechanism
 - [x] add the event processing loop into the update state method
 - [x] transform the esc button gesture to sdl event quit event

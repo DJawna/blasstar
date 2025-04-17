@@ -5,7 +5,8 @@ use std::{
 
 use sdl3::{
     event::{Event, EventPollIterator, EventSender},
-    keyboard::Keycode, log::log_debug,
+    keyboard::Keycode,
+    log::log_debug,
 };
 
 #[derive(PartialEq)]
@@ -99,10 +100,9 @@ impl GameState {
                         game_input._d_pad_input = DPadDirection::Up;
                     }
                     Keycode::Down => {
-
                         log_debug(sdl3::log::Category::Input, "down button pressed");
                         game_input._d_pad_input = DPadDirection::Down;
-                    },
+                    }
                     Keycode::Return => {
                         log_debug(sdl3::log::Category::Input, "return button pressed");
                         game_input.confirm_gesture = true;
@@ -114,9 +114,11 @@ impl GameState {
         }
 
         // Todo: should be a generic method: There were any inputs yes or no
+        /*
         if game_input._d_pad_input == DPadDirection::None {
             return Ok(());
         }
+         */
         self.current_ui
             .update_ui_state(&game_input, event_sender, self.get_ns_since_sdlinit())?;
         Ok(())
